@@ -18,13 +18,6 @@ namespace VectorTest
 				{auto x = Vector({ 12, 33,44,55,11 }); x[10]; });
 		}
 
-		TEST_METHOD(Pop_IncorrectIndex_ExeptionExpected)
-		{
-
-			Assert::ExpectException<std::out_of_range>([]()
-				{auto x = Vector({ 12, 33,44,55,11 }); x.pop(10); });
-		}
-
 		TEST_METHOD(ToString_ValidData_Success)
 		{
 			Vector vector_1{ 12, 33,44,55,11 };
@@ -52,24 +45,16 @@ namespace VectorTest
 			Assert::IsTrue(vector_1 == expected_vector);
 		}
 
-		TEST_METHOD(Pop_ValidData_Success)
-		{
-			Vector vector_1{ 12, 33,44,55,11 };
-			vector_1.pop(1);
-			Vector expected_vector{ 12,44,55,11 };
-			Assert::IsTrue(vector_1 == expected_vector);
-		}
-
 		TEST_METHOD(Find_ValidData_Success)
 		{
 			Vector vector_1{ 12, 33,44,55,11 };
 			Assert::IsTrue(vector_1.find(33) == 1);
 		}
 
-		TEST_METHOD(IsEmpty_ValidData_Success)
+		TEST_METHOD(HasElements_ValidData_Success)
 		{
-			Vector vector_1{};
-			Assert::IsTrue(vector_1.is_empty());
+			Vector vector_1 { 12, 33,44,55,11 };
+			Assert::IsTrue(vector_1.has_elements());
 		}
 
 		TEST_METHOD(OutputOperator_ValidData_Success)

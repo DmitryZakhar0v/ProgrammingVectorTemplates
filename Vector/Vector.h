@@ -4,6 +4,36 @@
 
 namespace miit::vector
 {
+
+	template<typename T> class Vector;
+
+	/**
+	@brief Опрератор сдвига.
+	@param os Поток вывода.
+	@param vector Вектор для вывода.
+	@return Изменённый поток вывода.
+	*/
+	template<typename T>
+	std::ostream& operator<< (std::ostream& os, const Vector<T>& vector);
+
+	/**
+	@brief Перегрузка оператора равно
+	@param rha Первый аргумент для сравнения
+	@param lha Второй аргумент для сравнения
+	@return false если равны и true если н ет
+	*/
+	template<typename T>
+	bool operator==(const Vector<T>& rha, const Vector<T>& lha) noexcept;
+
+	/**
+	@brief Перегрузка оператора не равно
+	@param rha Первый аргумент для сравнения
+	@param lha Второй аргумент для сравнения
+	@return true если равны и false если нет
+	*/
+	template<typename T>
+	bool operator!=(const Vector<T>& rha, const Vector<T>& lha) noexcept;
+
 	template<typename T>
 	class Vector final
 	{
@@ -14,6 +44,7 @@ namespace miit::vector
 		@param list Лист по которому строится vector
 		*/
 		Vector(const std::initializer_list<T> list);
+		
 
 		/**
 		@brief Чистит памать за vector
@@ -24,39 +55,40 @@ namespace miit::vector
 		@brief Получение длинны vector'a
 		@return Количество элементов vector'a
 		*/
-		int get_size() const;
+		size_t get_size() const;
 
 		/**
 		@brief Добавление элемента в вектор
 		@param Значение элемента
 		*/
-		void append(T value);
-
-		/**
-		@brief Удаление элемента из vector по индексу
-		@param index Индекс элемента
-		*/
-		void pop(int index);
+		void append(const T& value);
 
 		/**
 		@brief Получение индекса элемента в списке
 		@param value Искомое значение
 		@return индекс элемента если он есть в vector и -1 если его в нем нет
 		*/
-		int find(T value) const;
+		size_t find(const T& value) const;
 
 		/**
-		@brief Получение информации об отсутствии элементов в vector
+		@brief Получение информации об наличии элементов в vector
 		@return true если есть элементы и false если нет
 		*/
-		bool is_empty() const;
+		bool has_elements() const;
 
 		/**
 		@brief Перегрузка оператора квадратные скобки
 		@param index Индекс элемента в векторе
 		@return Элемент из вектора
 		*/
-		T& operator[](int index);
+		T& operator[](size_t index);
+
+		/**
+		@brief Перегрузка оператора квадратные скобки для конастантного объекта
+		@param index Индекс элемента в векторе
+		@return Элемент из вектора
+		*/
+		const T& operator[](size_t index) const;
 
 		/**
 		@brief Перегрузка оператора копирования
@@ -84,29 +116,6 @@ namespace miit::vector
 		*/
 		Vector(Vector<T>&& vector) noexcept;
 
-		/*
-		@brief Перегрузка оператора вывода
-		@param os Поток вывода
-		@param vector Вектор для вывода
-		*/
-		friend std::ostream& operator<<(std::ostream& os, Vector<T>& vector) noexcept;
-
-		/**
-		@brief Перегрузка оператора равно
-		@param rha Первый аргумент для сравнения
-		@param lha Второй аргумент для сравнения
-		@return false если равны и true если нет
-		*/
-		friend bool operator==(const Vector<T>& rha, const Vector<T>& lha) noexcept;
-
-		/**
-		@brief Перегрузка оператора не равно
-		@param rha Первый аргумент для сравнения
-		@param lha Второй аргумент для сравнения
-		@return true если равны и false если нет
-		*/
-		friend bool operator!=(const Vector<T>& rha, const Vector<T>& lha) noexcept;
-
 		/**
 		@brief Преобразование объета в строку
 		@return строка полученная из объекта
@@ -129,6 +138,7 @@ namespace miit::vector
 		}
 	}
 
+
 	template<typename T>
 	inline Vector<T>::~Vector()
 	{
@@ -137,13 +147,13 @@ namespace miit::vector
 	}
 
 	template<typename T>
-	inline int Vector<T>::get_size() const
+	inline size_t Vector<T>::get_size() const
 	{
 		return this->size;
 	}
 
 	template<typename T>
-	void Vector<T>::append(T value)
+	void Vector<T>::append(const T& value)
 	{
 		int* new_values = new int[this->size + 1];
 		for (size_t i = 0; i < this->size; i++)
@@ -155,28 +165,24 @@ namespace miit::vector
 		this->values = new_values;
 		this->size++;
 	}
-
-
-	template<typename T>
-	bool Vector<T>::is_empty() const
-	{
-		return (this->size == 0);
-	}
-
 	
 	template<typename T>
 	Vector<T>& Vector<T>::operator=(Vector<T>&& vector) noexcept
 	{
-		std::swap(vector.values, this->values);
-		std::swap(vector.size, this->size);
+		if (*this != vector)
+		{
+			std::swap(vector.values, this->values);
+			std::swap(vector.size, this->size);
+		}
 		return *this;
+		
 	}
 
 	template<typename T>
 	Vector<T>::Vector(const Vector<T>& vector)
 		:size(0), values(nullptr)
 	{
-		if (!this->is_empty())
+		if (this->has_elements())
 		{
 			delete[] this->values;
 			this->values = nullptr;
@@ -193,63 +199,37 @@ namespace miit::vector
 	Vector<T>::Vector(Vector<T>&& vector) noexcept
 		:size(0), values(nullptr)
 	{
+		
 		std::swap(vector.values, this->values);
 		std::swap(vector.size, this->size);
+	
 	}
 
-	template<typename T>
-	T& Vector<T>::operator[](int index)
-	{
-		if (this->is_empty() || index >= this->size or index < 0)
-		{
-			throw std::out_of_range("Incorrect Index");
-		}
-		return this->values[index];
-	}
+	
 
 	template<typename T>
 	inline Vector<T>& Vector<T>::operator=(const Vector& vector)
 	{
-		if (!this->is_empty())
+		if (*this != vector) 
 		{
-			delete[] this->values;
-			this->values = nullptr;
-			this->size = 0;
-		}
-		for (int i = 0; i < vector.get_size(); i++)
-		{
-			this->append(vector.values[i]);
+			if (this->has_elements())
+			{
+				delete[] this->values;
+				this->values = nullptr;
+				this->size = 0;
+			}
+			for (int i = 0; i < vector.get_size(); i++)
+			{
+				this->append(vector.values[i]);
+			}
 		}
 		return *this;
 	}
 
-	
 	template<typename T>
-	void Vector<T>::pop(int index)
+	size_t Vector<T>::find(const T& value) const
 	{
-		if (this->size == 0 or index < 0 or index >= this->size)
-		{
-			throw std::out_of_range("Incorrect Index");
-		}
-		int* vector_1 = new int[this->size - 1];
-		size_t current = 0;
-		for (size_t i = 0; i < this->size; i++)
-		{
-			if (i != index)
-			{
-				vector_1[current] = this->values[i];
-				current++;
-			}
-		}
-		delete[] this->values;
-		this->values = vector_1;
-		this->size--;
-	}
-
-	template<typename T>
-	int Vector<T>::find(T value) const
-	{
-		if (this->is_empty())
+		if (!this->has_elements())
 		{
 			return -1;
 		}
@@ -269,6 +249,33 @@ namespace miit::vector
 		}
 	}
 
+	template<typename T>
+	inline bool Vector<T>::has_elements() const
+	{
+		return this->size != 0;
+	}
+
+
+	template<typename T>
+	inline T& Vector<T>::operator[](size_t index)
+	{
+		if (!this->has_elements() || index >= this->size or index < 0)
+		{
+			throw std::out_of_range("Incorrect Index");
+		}
+		return this->values[index];
+	}
+
+	template<typename T>
+	inline const T& Vector<T>::operator[](size_t index) const
+	{
+		if (!this->has_elements() || index >= this->size or index < 0)
+		{
+			throw std::out_of_range("Incorrect Index");
+		}
+		return this->values[index];
+	}
+
 
 	template<typename T>
 	std::string Vector<T>::to_string() const noexcept
@@ -284,12 +291,6 @@ namespace miit::vector
 	}
 
 	template<typename T>
-	std::ostream& operator<<(std::ostream& os, Vector<T>& vector) noexcept
-	{
-		return os << vector.to_string();
-	}
-
-	template<typename T>
 	bool operator==(const Vector<T>& rha, const Vector<T>& lha) noexcept
 	{
 		return (rha.to_string() == lha.to_string());
@@ -301,7 +302,11 @@ namespace miit::vector
 		return !(rha == lha);
 	}
 
-
+	template<typename T>
+	std::ostream& operator<<(std::ostream& os, const Vector<T>& vector)
+	{
+		return os << vector.to_string();
+	}
 };
 
 
