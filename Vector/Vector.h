@@ -68,7 +68,7 @@ namespace miit::vector
 		@param value Искомое значение
 		@return индекс элемента если он есть в vector и -1 если его в нем нет
 		*/
-		size_t find(const T& value) const;
+		int find(const T& value) const;
 
 		/**
 		@brief Получение информации об наличии элементов в vector
@@ -81,14 +81,14 @@ namespace miit::vector
 		@param index Индекс элемента в векторе
 		@return Элемент из вектора
 		*/
-		T& operator[](size_t index);
+		T& operator[](int index);
 
 		/**
 		@brief Перегрузка оператора квадратные скобки для конастантного объекта
 		@param index Индекс элемента в векторе
 		@return Элемент из вектора
 		*/
-		const T& operator[](size_t index) const;
+		const T& operator[](int index) const;
 
 		/**
 		@brief Перегрузка оператора копирования
@@ -98,7 +98,7 @@ namespace miit::vector
 		Vector<T>& operator=(const Vector<T>& vector);
 
 		/*
-		@brief Перегрузка move оператора
+		@brief Перегрузка оператора перемещения
 		@param Vector Список для мува
 		@return Объект типа DLList
 		*/
@@ -132,7 +132,7 @@ namespace miit::vector
 	inline Vector<T>::Vector(const std::initializer_list<T> list)
 		:size(0)
 	{
-		for (int value : list)
+		for (auto value : list)
 		{
 			this->append(value);
 		}
@@ -155,17 +155,25 @@ namespace miit::vector
 	template<typename T>
 	void Vector<T>::append(const T& value)
 	{
-		int* new_values = new int[this->size + 1];
-		for (size_t i = 0; i < this->size; i++)
-		{
-			new_values[i] = this->values[i];
-		}
+		T* new_values = new T[this->size + 1];
+		std::copy(this->values, this->values + this->size, new_values);
 		new_values[this->size] = value;
-		delete[] this->values;
 		this->values = new_values;
 		this->size++;
+		delete[] new_values;
 	}
 	
+	template<typename T>
+	Vector<T>::Vector(Vector<T>&& vector) noexcept
+		:size(0), values(nullptr)
+	{
+		if (*this != vector) 
+		{
+			std::swap(vector.values, this->values);
+			std::swap(vector.size, this->size);
+		}
+	}
+
 	template<typename T>
 	Vector<T>& Vector<T>::operator=(Vector<T>&& vector) noexcept
 	{
@@ -196,18 +204,6 @@ namespace miit::vector
 	}
 
 	template<typename T>
-	Vector<T>::Vector(Vector<T>&& vector) noexcept
-		:size(0), values(nullptr)
-	{
-		
-		std::swap(vector.values, this->values);
-		std::swap(vector.size, this->size);
-	
-	}
-
-	
-
-	template<typename T>
 	inline Vector<T>& Vector<T>::operator=(const Vector& vector)
 	{
 		if (*this != vector) 
@@ -227,13 +223,12 @@ namespace miit::vector
 	}
 
 	template<typename T>
-	size_t Vector<T>::find(const T& value) const
+	int Vector<T>::find(const T& value) const
 	{
 		if (!this->has_elements())
 		{
 			return -1;
 		}
-
 		int index = 0;
 		while ((index < this->size) && this->values[index] != value)
 		{
@@ -243,10 +238,8 @@ namespace miit::vector
 		{
 			return -1;
 		}
-		else
-		{
-			return index;
-		}
+		return index;
+	
 	}
 
 	template<typename T>
@@ -257,7 +250,7 @@ namespace miit::vector
 
 
 	template<typename T>
-	inline T& Vector<T>::operator[](size_t index)
+	inline T& Vector<T>::operator[](int index)
 	{
 		if (!this->has_elements() || index >= this->size or index < 0)
 		{
@@ -267,7 +260,7 @@ namespace miit::vector
 	}
 
 	template<typename T>
-	inline const T& Vector<T>::operator[](size_t index) const
+	inline const T& Vector<T>::operator[](int index) const
 	{
 		if (!this->has_elements() || index >= this->size or index < 0)
 		{
@@ -275,7 +268,6 @@ namespace miit::vector
 		}
 		return this->values[index];
 	}
-
 
 	template<typename T>
 	std::string Vector<T>::to_string() const noexcept
