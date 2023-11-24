@@ -6,8 +6,8 @@ int main()
 {
 	try
 	{
-		Vector vector_1{ 12, 33,44,55,11 };
-		const Vector vector_2{ 33, 22 ,44, 55 };
+		Vector<int> vector_1{ 12, 33,44,55,11 };
+		const Vector<int> vector_2{ 33, 22 ,44, 55 };
 		std::cout << vector_2[1];
 		std::cout << vector_1 << std::endl;
 	}
