@@ -129,7 +129,7 @@ namespace miit::vector
 	};
 	
 	template<typename T>
-	inline Vector<T>::Vector(const std::initializer_list<T> list)
+	inline Vector<T>::Vector(std::initializer_list<T> list)
 		:size(0)
 	{
 		for (auto& value : list)
@@ -167,8 +167,7 @@ namespace miit::vector
 	Vector<T>::Vector(Vector<T>&& vector) noexcept
 		:size(0), values(nullptr)
 	{
-		std::swap(vector.values, this->values);
-		std::swap(vector.size, this->size);
+		*this = std::move(vector);
 	}
 
 	template<typename T>
@@ -176,8 +175,7 @@ namespace miit::vector
 	{
 		if (*this != vector)
 		{
-			std::swap(vector.values, this->values);
-			std::swap(vector.size, this->size);
+			*this = std::move(vector);
 		}
 		return *this;
 	}
@@ -186,13 +184,13 @@ namespace miit::vector
 	Vector<T>::Vector(const Vector<T>& vector)
 		:size(0), values(nullptr)
 	{
-		Vector temp{};
-		for (int i = 0; i < vector.get_size(); i++)
+		Vector temp {};
+		for (size_t i = 0; i < vector.get_size(); i++)
 		{
-			this->append(temp.values[i]);
+			temp.append(vector.values[i]);
 		}
 		std::swap(this->values, temp.values);
-		std::swap(this->size, temp.size);
+		std::exchange(this->size, temp.size);
 	}
 	
 	template<typename T>
@@ -200,13 +198,9 @@ namespace miit::vector
 	{
 		if (*this != vector) 
 		{
-			Vector temp{};
-			for (int i = 0; i < vector.get_size(); i++)
-			{
-				this->append(temp.values[i]);
-			}
+			Vector temp{ vector };
 			std::swap(this->values, temp.values);
-			std::swap(this->size, temp.size);
+			std::exchange(this->size, temp.size);
 		}
 		return *this;
 	}
